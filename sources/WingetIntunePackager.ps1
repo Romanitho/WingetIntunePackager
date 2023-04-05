@@ -9,7 +9,7 @@ https://github.com/Romanitho/Winget-Intune-Packager
 ### APP INFO ###
 
 #Winget Intune Packager version
-$Script:WingetPackager = "1.0.0"
+$Script:WingetIntunePackager = "1.1.0"
 #Winget-Install Github Link
 $Script:WIGithubLink = "https://github.com/Romanitho/Winget-Install/archive/refs/tags/v1.10.1.zip"
 #Temp folder
@@ -50,7 +50,7 @@ function Start-InstallGUI {
         <Button x:Name="CloseButton" Content="Close" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,10" Width="90" Height="24"/>
         <Button x:Name="CreateButton" Content="Create" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,105,10" Width="90" Height="24" IsEnabled="False"/>
         <TextBlock x:Name="GithubLinkLabel" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10,0,0,14">
-            <Hyperlink NavigateUri="https://github.com/Romanitho/Winget-Install-GUI">We are on GitHub</Hyperlink>
+            <Hyperlink NavigateUri="https://github.com/Romanitho/WingetIntunePackager">We are on GitHub</Hyperlink>
         </TextBlock>
         <Label x:Name="VersionLabel" Content="[Optional] Specify version (--version):" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="360,70,0,0"/>
         <TextBox x:Name="VersionTextBox" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="360,96,0,0" Width="220" Height="24" VerticalContentAlignment="Center"/>
@@ -81,7 +81,7 @@ function Start-InstallGUI {
 
     #Create window
     $inputXML = $inputXML -replace 'mc:Ignorable="d"', '' -replace "x:N", 'N' -replace '^<Win.*', '<Window'
-    [xml]$XAML = $inputXML -f $WingetPackager
+    [xml]$XAML = $inputXML -f $WingetIntunePackager
 
     #Read the form
     $Reader = (New-Object System.Xml.XmlNodeReader $xaml)
@@ -222,6 +222,10 @@ function Start-InstallGUI {
             Close-PopUp
         })
 
+    $GithubLinkLabel.Add_PreviewMouseDown({
+            [System.Diagnostics.Process]::Start("https://github.com/Romanitho/WingetIntunePackager")
+        })
+
     $CloseButton.add_click({
             $WingetIntunePackagerForm.DialogResult = [System.Windows.Forms.DialogResult]::Cancel
             $WingetIntunePackagerForm.Close()
@@ -239,14 +243,14 @@ Function Start-PopUp ($Message) {
 
         #Create window
         $inputXML = @"
-<Window x:Class="WiGui_v3.PopUp"
+<Window x:Class="Winget_Intune_Packager.PopUp"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WiGui_v3"
         mc:Ignorable="d"
-        Title="WiGui {0}" Width="260" Height="130" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" Topmost="True">
+        Title="Winget Intune Packager $WingetIntunePackager" Width="260" Height="130" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" Topmost="True">
     <Grid>
         <TextBlock x:Name="PopUpLabel" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10"/>
 
@@ -254,8 +258,7 @@ Function Start-PopUp ($Message) {
 </Window>
 "@
 
-        $inputXML = $inputXML -replace 'mc:Ignorable="d"', '' -replace "x:N", 'N' -replace '^<Win.*', '<Window'
-        [xml]$XAML = $inputXML -f $WiGuiVersion
+        [xml]$XAML = $inputXML -replace 'mc:Ignorable="d"', '' -replace "x:N", 'N' -replace '^<Win.*', '<Window'
 
         #Read the form
         $Reader = (New-Object System.Xml.XmlNodeReader $xaml)
@@ -513,6 +516,93 @@ function Invoke-IntunePackage ($Win32AppArgs) {
     Add-IntuneWin32App @Win32AppArgs
 }
 
+function Get-WIPLatestVersion {
+
+    ### FORM CREATION ###
+
+    #Show Wait form
+    Start-PopUp "Starting..."
+
+    #Get latest stable info
+    $WIPurl = 'https://api.github.com/repos/Romanitho/WingetIntunePackager/releases/latest'
+    $WIPLatestVersion = ((Invoke-WebRequest $WIPurl -UseBasicParsing | ConvertFrom-Json)[0].tag_name).Replace("v", "")
+
+    if ([version]$WingetIntunePackager -lt [version]$WIPLatestVersion) {
+
+        #Create window
+        $inputXML = @"
+<Window x:Class="Winget_Intune_Packager.Update"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="clr-namespace:WiGui_v3"
+    mc:Ignorable="d"
+    Title="Winget Intune Packager $WingetIntunePackager - Update available" ResizeMode="NoResize" SizeToContent="WidthAndHeight" WindowStartupLocation="CenterScreen">
+    <Grid>
+        <StackPanel Height="32" Orientation="Horizontal" UseLayoutRounding="False" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="6">
+            <Button x:Name="GithubButton" Content="See on GitHub" Margin="4" Width="100"/>
+            <Button x:Name="DownloadButton" Content="Download" Margin="4" Width="100"/>
+            <Button x:Name="SkipButton" Content="Skip" Margin="4" Width="100" IsDefault="True"/>
+        </StackPanel>
+        <TextBlock x:Name="TextBlock" HorizontalAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Center" Margin="20,20,20,54" MaxWidth="480" Text="A New WiGui version is available. Version $WIPLatestVersion"/>
+    </Grid>
+</Window>
+"@
+
+        $inputXML = $inputXML -replace 'mc:Ignorable="d"', '' -replace "x:N", 'N' -replace '^<Win.*', '<Window'
+        [xml]$XAML = $inputXML -f $WiGuiVersion
+
+        #Read the form
+        $Reader = (New-Object System.Xml.XmlNodeReader $xaml)
+        $UpdateWindow = [Windows.Markup.XamlReader]::Load($Reader)
+        $UpdateWindow.Icon = $IconBase64
+
+        #Store Form Objects In PowerShell
+        $FormObjects = $XAML.SelectNodes("//*[@Name]")
+        $FormObjects | ForEach-Object {
+            Set-Variable -Name "$($_.Name)" -Value $UpdateWindow.FindName($_.Name) -Scope Script
+        }
+
+
+        ## ACTIONS ##
+
+        $GithubButton.add_click({
+                [System.Diagnostics.Process]::Start("https://github.com/Romanitho/WingetIntunePackager/releases")
+            })
+
+        $DownloadButton.add_click({
+                $WIPSaveFile = New-Object System.Windows.Forms.SaveFileDialog
+                $WIPSaveFile.Filter = "Exe file (*.exe)|*.exe"
+                $WIPSaveFile.FileName = "WingetIntunePackager_$WIPLatestVersion.exe"
+                $response = $WIPSaveFile.ShowDialog() # $response can return OK or Cancel
+                if ( $response -eq 'OK' ) {
+                    $WiGuiDlLink = "https://github.com/Romanitho/WingetIntunePackager/releases/download/v$WIPLatestVersion/WingetIntunePackager.exe"
+                    Invoke-WebRequest -Uri $WiGuiDlLink -OutFile $WiGuiSaveFile.FileName
+                    $WiGuiUpdate.Close()
+                    $WiGuiUpdate.DialogResult = [System.Windows.Forms.DialogResult]::OK
+                }
+            })
+
+        $SkipButton.add_click({
+                $UpdateWindow.DialogResult = [System.Windows.Forms.DialogResult]::Cancel
+                $UpdateWindow.Close()
+            })
+
+
+        ## RETURNS ##
+        #Show Wait form
+        Close-PopUp
+        $UpdateWindow.ShowDialog() | Out-Null
+
+    }
+    else {
+        #Show Wait form
+        Close-PopUp
+    }
+
+}
+
 
 
 ### PREREQUISITES ###
@@ -546,6 +636,9 @@ Close-PopUp
 
 
 ### MAIN ###
+
+#Get WingetIntunePackager latest version
+Get-WIPLatestVersion
 
 #Get WinGet cmd
 Get-WingetCmd
