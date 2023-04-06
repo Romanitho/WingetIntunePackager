@@ -224,6 +224,10 @@ function Start-InstallGUI {
             Close-PopUp
         })
 
+    $GithubLinkLabel.Add_PreviewMouseDown({
+            [System.Diagnostics.Process]::Start("https://github.com/Romanitho/WingetIntunePackager")
+        })
+
     $CloseButton.add_click({
             $WingetIntunePackagerForm.DialogResult = [System.Windows.Forms.DialogResult]::Cancel
             $WingetIntunePackagerForm.Close()
