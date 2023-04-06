@@ -530,10 +530,10 @@ function Invoke-IntunePackage ($Win32AppArgs) {
         $Win32AppArgs.Publisher = $AppInfo.Publisher
     }
     if ($AppInfo.PackageUrl) {
-        $Win32AppArgs.InformationURL = $AppInfo.PackageUrl
+        $Win32AppArgs.InformationURL = $AppInfo.PackageUrl.replace("'","")
     }
     if ($AppInfo.PrivacyUrl) {
-        $Win32AppArgs.PrivacyURL = $AppInfo.PrivacyUrl
+        $Win32AppArgs.PrivacyURL = $AppInfo.PrivacyUrl.replace("'","")
     }
     if ($AppInfo.Author) {
         $Win32AppArgs.Developer = $AppInfo.Author
