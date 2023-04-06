@@ -9,7 +9,7 @@ https://github.com/Romanitho/Winget-Intune-Packager
 ### APP INFO ###
 
 #Winget Intune Packager version
-$Script:WingetIntunePackager = "1.1.3"
+$Script:WingetIntunePackager = "1.1.4"
 #Winget-Install Github Link
 $Script:WIGithubLink = "https://github.com/Romanitho/Winget-Install/archive/refs/tags/v1.10.1.zip"
 #Winget Intune Packager Icon Base64
@@ -530,10 +530,10 @@ function Invoke-IntunePackage ($Win32AppArgs) {
         $Win32AppArgs.Publisher = $AppInfo.Publisher
     }
     if ($AppInfo.PackageUrl) {
-        $Win32AppArgs.InformationURL = $AppInfo.PackageUrl
+        $Win32AppArgs.InformationURL = $AppInfo.PackageUrl.replace("'","")
     }
     if ($AppInfo.PrivacyUrl) {
-        $Win32AppArgs.PrivacyURL = $AppInfo.PrivacyUrl
+        $Win32AppArgs.PrivacyURL = $AppInfo.PrivacyUrl.replace("'","")
     }
     if ($AppInfo.Author) {
         $Win32AppArgs.Developer = $AppInfo.Author
