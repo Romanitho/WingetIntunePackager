@@ -9,7 +9,7 @@ https://github.com/Romanitho/Winget-Intune-Packager
 ### APP INFO ###
 
 #Winget Intune Packager version
-$Script:WingetIntunePackager = "1.1.2"
+$Script:WingetIntunePackager = "1.1.3"
 #Winget-Install Github Link
 $Script:WIGithubLink = "https://github.com/Romanitho/Winget-Install/archive/refs/tags/v1.10.1.zip"
 #Winget Intune Packager Icon Base64
@@ -42,7 +42,7 @@ function Start-InstallGUI {
         </Grid.Background>
         <Label x:Name="SearchLabel" Content="Search for an app on Winget Repo:" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="10,10,0,0"/>
         <TextBox x:Name="SearchTextBox" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,36,0,0" Width="570" Height="24" VerticalContentAlignment="Center"/>
-        <Button x:Name="SearchButton" Content="Search" HorizontalAlignment="Right" VerticalAlignment="Top" Width="90" Height="24" Margin="0,36,10,0" IsDefault="True"/>
+        <Button x:Name="SearchButton" Content="Search" HorizontalAlignment="Right" VerticalAlignment="Top" Width="90" Height="24" Margin="0,36,10,0"/>
         <Label x:Name="SubmitLabel" Content="Select the matching Winget AppID (--id):" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="10,70,0,0"/>
         <Button x:Name="CheckButton" Content="Check" HorizontalAlignment="Right" VerticalAlignment="Top" Width="90" Height="24" Margin="0,96,10,0"/>
         <Button x:Name="IconButton" Content="Select Icon" HorizontalAlignment="Right" Width="90" Height="24" Margin="0,250,10,0" VerticalAlignment="Top"/>
@@ -103,50 +103,71 @@ function Start-InstallGUI {
 
     ### FORM ACTIONS ###
 
+    $SearchButtonAction = {
+        if ($SearchTextBox.Text) {
+            $IDComboBox.Items.Clear()
+            Start-PopUp "Searching..."
+            $IDComboBox.Foreground = "Black"
+            $IDComboBox.Tag = $null
+            $AppIcon.Source = $null
+            $IntuneDescriptionTextBox.Text = $null
+            $List = Get-WingetAppList $SearchTextBox.Text
+            foreach ($L in $List) {
+                $IDComboBox.Items.Add($L.ID)
+            }
+            $IDComboBox.SelectedIndex = 0
+            Close-PopUp
+        }
+    }
     $SearchButton.add_click({
-            if ($SearchTextBox.Text) {
-                $IDComboBox.Items.Clear()
-                Start-PopUp "Searching..."
-                $IDComboBox.Foreground = "Black"
-                $IDComboBox.Tag = $null
-                $AppIcon.Source = $null
-                $IntuneDescriptionTextBox.Text = $null
-                $List = Get-WingetAppList $SearchTextBox.Text
-                foreach ($L in $List) {
-                    $IDComboBox.Items.Add($L.ID)
-                }
-                $IDComboBox.SelectedIndex = 0
-                Close-PopUp
+            & $SearchButtonAction
+        })
+    $SearchTextBox.add_keydown({
+            if ($_.Key -eq "Enter") {
+                & $SearchButtonAction
             }
         })
 
-    $CheckButton.add_click({
-            if ($IDComboBox.text) {
-                $IntuneDescriptionTextBox.Text = ""
-                Start-PopUp "Checking..."
-                Get-WingetAppInfo $IDComboBox.Text $VersionTextBox.Text
-                if ($AppInfo.id) {
-                    if ($AppInfo.Description) {
-                        $IntuneDescriptionTextBox.Text = $AppInfo.Description
-                    }
-                    else {
-                        $IntuneDescriptionTextBox.Text = $AppInfo.ShortDescription
-                    }
-                    $IDComboBox.Foreground = "Green"
-                    $IDComboBox.Tag = "Ok"
-                    $VersionTextBox.Foreground = "Green"
-                    $AppIcon.Source = $AppInfo.Icon
-                    if ($ConnectionStatusTextBlock.Tag -eq "Ok") {
-                        $CreateButton.IsEnabled = $true
-                    }
+    $CheckButtonAction = {
+        if ($IDComboBox.text) {
+            $IntuneDescriptionTextBox.Text = ""
+            Start-PopUp "Checking..."
+            Get-WingetAppInfo $IDComboBox.Text $VersionTextBox.Text
+            if ($AppInfo.id) {
+                if ($AppInfo.Description) {
+                    $IntuneDescriptionTextBox.Text = $AppInfo.Description
                 }
                 else {
-                    $IDComboBox.Foreground = "Red"
-                    $IDComboBox.Tag = $null
-                    $VersionTextBox.Foreground = "Red"
-                    $CreateButton.IsEnabled = $false
+                    $IntuneDescriptionTextBox.Text = $AppInfo.ShortDescription
                 }
-                Close-PopUp
+                $IDComboBox.Foreground = "Green"
+                $IDComboBox.Tag = "Ok"
+                $VersionTextBox.Foreground = "Green"
+                $AppIcon.Source = $AppInfo.Icon
+                if ($ConnectionStatusTextBlock.Tag -eq "Ok") {
+                    $CreateButton.IsEnabled = $true
+                }
+            }
+            else {
+                $IDComboBox.Foreground = "Red"
+                $IDComboBox.Tag = $null
+                $VersionTextBox.Foreground = "Red"
+                $CreateButton.IsEnabled = $false
+            }
+            Close-PopUp
+        }
+    }
+    $CheckButton.add_click({
+            & $CheckButtonAction
+        })
+    $VersionTextBox.add_keydown({
+            if ($_.Key -eq "Enter") {
+                & $CheckButtonAction
+            }
+        })
+    $IDComboBox.add_keydown({
+            if ($_.Key -eq "Enter") {
+                & $CheckButtonAction
             }
         })
 
@@ -161,24 +182,32 @@ function Start-InstallGUI {
             $AppIcon.Source = $AppInfo.Icon = $null
         })
 
+    $ConnectButtonAction = {
+        Start-PopUp "Connecting..."
+        $ConnectionStatus = Connect-MSIntuneGraph -TenantID $IntuneTenantIDTextbox.Text
+        if ($ConnectionStatus.ExpiresOn) {
+            $ConnectionStatusTextBlock.Foreground = "Green"
+            $ConnectionStatusTextBlock.Text = "Connection expires on: $($ConnectionStatus.ExpiresOn.ToLocalTime())"
+            $ConnectionStatusTextBlock.Tag = "Ok"
+            if ($IDComboBox.Tag -eq "Ok") {
+                $CreateButton.IsEnabled = $true
+            }
+        }
+        else {
+            $ConnectionStatusTextBlock.Foreground = "Red"
+            $ConnectionStatusTextBlock.Text = "Not connected."
+            $ConnectionStatusTextBlock.Tag = $null
+            $CreateButton.IsEnabled = $false
+        }
+        Close-PopUp
+    }
     $ConnectButton.add_click({
-            Start-PopUp "Connecting..."
-            $ConnectionStatus = Connect-MSIntuneGraph -TenantID $IntuneTenantIDTextbox.Text
-            if ($ConnectionStatus.ExpiresOn) {
-                $ConnectionStatusTextBlock.Foreground = "Green"
-                $ConnectionStatusTextBlock.Text = "Connection expires on: $($ConnectionStatus.ExpiresOn.ToLocalTime())"
-                $ConnectionStatusTextBlock.Tag = "Ok"
-                if ($IDComboBox.Tag -eq "Ok") {
-                    $CreateButton.IsEnabled = $true
-                }
+            & $ConnectButtonAction
+        })
+    $IntuneTenantIDTextbox.add_keydown({
+            if ($_.Key -eq "Enter") {
+                & $ConnectButtonAction
             }
-            else {
-                $ConnectionStatusTextBlock.Foreground = "Red"
-                $ConnectionStatusTextBlock.Text = "Not connected."
-                $ConnectionStatusTextBlock.Tag = $null
-                $CreateButton.IsEnabled = $false
-            }
-            Close-PopUp
         })
 
     $HelpWhitelistLabel.Add_PreviewMouseDown({
