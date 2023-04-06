@@ -9,9 +9,11 @@ https://github.com/Romanitho/Winget-Intune-Packager
 ### APP INFO ###
 
 #Winget Intune Packager version
-$Script:WingetIntunePackager = "1.1.1"
+$Script:WingetIntunePackager = "1.1.2"
 #Winget-Install Github Link
 $Script:WIGithubLink = "https://github.com/Romanitho/Winget-Install/archive/refs/tags/v1.10.1.zip"
+#Winget Intune Packager Icon Base64
+$Script:IconBase64 = [Convert]::FromBase64String("AAABAAEAEBAAAAAAAABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAQAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAUKEUwPHjCLECAzkRAgM5EQIDORECAzkRAgM5EQIDORECAzkRAgM5EPHjCOBQoRXwAAABQAAAAAAAAAABUoPpAyYZv9NWaj/zVmpP81ZqT/NWak/zVmpP81ZqT/NWak/zVmpP81ZqT/NWaj/zJgmv0TJDmtAAAAFAkQGC01ZZ/9MGWh/yFfl/8oY5z/IV+X/y5loP81aKT/W4S1/8XKz/+5vcL/ub3C/7m9wv99lLH/KU56/QYKD1wgOVZcOGyn/zFpov8eX5X/Lmeg/x5flf8vaKH/OGyn/2GKuf+2trb/n5+f/5+fn/+Tk5P/Z3uS/ypTf/8QHi2LJURjXzpxqv85cKn/Kmie/zlxqv8raJ//OHCo/zpxqv9Tg7X/obbM/5uxxv+QobP/d4eX/1Z0kv8sVoL/EiEwjCdHZl88daz/PHWs/zx1rP88daz/PHWs/zx1rP88daz/PHWs/zx1rP82apv/LlqE/y5ZhP8uWYT/LlmE/xMjMosrTGpfPnqv/z56r/8+eq//Pnqv/z56r/8+eq//Pnqv/z56r/84bp7/L12G/y9dhv8vXYb/L12G/y9dhv8VJTSKL1FtX0B/sv9Af7L/QH+y/0B/sv9Af7L/QH+y/0B/sv86cqD/MWGI/zFhiP8xYYj/MWGI/zFhiP8xYYj/Fyc1iTNWcF9DhLX/Q4S1/0OEtf9DhLX/Q4S1/0OEtf88dqL/M2SK/zNkiv8zZIr/M2SK/zNkiv8zZIr/M2SK/xkqN4g4WnJfRYi3/0WIt/9FiLf/RYi3/0WIt/9Girj/U5i3/1edu/83a4//NWiM/zVojP81aIz/NWiM/zdulP8fNUSHPF91X0eNuv9Hjbr/R426/0eNuv9Hjbr/SI67/1igvv9cpsP/OW+R/zZsjv82bI7/NmyO/zlylv9Girb/IzpIhUBjd19Jkb3/SZG9/0mRvf9Jkb3/SZG9/0uTvf9Yob7/XafD/zpyk/84b5D/OG+Q/zt1mP9Ij7n/SZG9/yU8SoRHaHpbS5a//0uWv/9Llr//S5a//0uWv/9Nl8D/WaO//12oxP88dpX/OXOS/z15mv9Kk7v/S5a//0uWv/8oPUl9QFRfIVuixvtOm8L/TpvC/06bwv9Om8L/T5zC/1mkwP9eqcX/PXmX/z58nP9Ml77/TpvC/06bwv9ZoMT8ExkdPwAAAAB4obZsY6jK+0+dw/9OnMP/TpzD/1Cdw/9apMD/XqnF/0GBn/9Nmb//TpzD/0+dw/9hpcf8OlFchQAAAAIAAAAAAAAAAEpdZyFhfIlbYXyKX2F8il9ifYpfZX+JX2eBil9he4hfYnyKX2J8il9bc39cHiYqKQAAAAAAAAAAgAEAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAwAMAAA==")
 #Temp folder
 $Script:Location = "$Env:ProgramData\WingetIntunePackagerTemp"
 #Load assemblies
@@ -229,7 +231,6 @@ function Start-InstallGUI {
     $CloseButton.add_click({
             $WingetIntunePackagerForm.DialogResult = [System.Windows.Forms.DialogResult]::Cancel
             $WingetIntunePackagerForm.Close()
-            Sleep 3
         })
 
     # Shows the form
@@ -239,21 +240,20 @@ function Start-InstallGUI {
 
 Function Start-PopUp ($Message) {
 
-    if (!$Window) {
+    if (!$PopUpWindow) {
 
         #Create window
         $inputXML = @"
 <Window x:Class="Winget_Intune_Packager.PopUp"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:WiGui_v3"
-        mc:Ignorable="d"
-        Title="Winget Intune Packager $WingetIntunePackager" Width="260" Height="130" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" Topmost="True">
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="clr-namespace:Winget_Intune_Packager"
+    mc:Ignorable="d"
+    Title="Winget Intune Packager $WingetIntunePackager" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" Topmost="True" Width="280" MinHeight="130" SizeToContent="Height">
     <Grid>
-        <TextBlock x:Name="PopUpLabel" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10"/>
-
+        <TextBlock x:Name="PopUpLabel" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap" Margin="20"/>
     </Grid>
 </Window>
 "@
@@ -520,9 +520,6 @@ function Get-WIPLatestVersion {
 
     ### FORM CREATION ###
 
-    #Show Wait form
-    Start-PopUp "Starting..."
-
     #Get latest stable info
     $WIPurl = 'https://api.github.com/repos/Romanitho/WingetIntunePackager/releases/latest'
     $WIPLatestVersion = ((Invoke-WebRequest $WIPurl -UseBasicParsing | ConvertFrom-Json)[0].tag_name).Replace("v", "")
@@ -536,16 +533,16 @@ function Get-WIPLatestVersion {
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:local="clr-namespace:WiGui_v3"
+    xmlns:local="clr-namespace:Winget_Intune_Packager"
     mc:Ignorable="d"
-    Title="Winget Intune Packager $WingetIntunePackager - Update available" ResizeMode="NoResize" SizeToContent="WidthAndHeight" WindowStartupLocation="CenterScreen">
+    Title="Winget Intune Packager $WingetIntunePackager - Update available" ResizeMode="NoResize" SizeToContent="WidthAndHeight" WindowStartupLocation="CenterScreen" Topmost="True">
     <Grid>
+        <TextBlock x:Name="TextBlock" HorizontalAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Center" Margin="26,26,26,60" MaxWidth="480" Text="A New Winget Intune Packager version is available. Version $WIPLatestVersion"/>
         <StackPanel Height="32" Orientation="Horizontal" UseLayoutRounding="False" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="6">
             <Button x:Name="GithubButton" Content="See on GitHub" Margin="4" Width="100"/>
             <Button x:Name="DownloadButton" Content="Download" Margin="4" Width="100"/>
             <Button x:Name="SkipButton" Content="Skip" Margin="4" Width="100" IsDefault="True"/>
         </StackPanel>
-        <TextBlock x:Name="TextBlock" HorizontalAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Center" Margin="20,20,20,54" MaxWidth="480" Text="A New WiGui version is available. Version $WIPLatestVersion"/>
     </Grid>
 </Window>
 "@
@@ -568,6 +565,7 @@ function Get-WIPLatestVersion {
         ## ACTIONS ##
 
         $GithubButton.add_click({
+                $UpdateWindow.Topmost = $false
                 [System.Diagnostics.Process]::Start("https://github.com/Romanitho/WingetIntunePackager/releases")
             })
 
@@ -577,11 +575,15 @@ function Get-WIPLatestVersion {
                 $WIPSaveFile.FileName = "WingetIntunePackager_$WIPLatestVersion.exe"
                 $response = $WIPSaveFile.ShowDialog() # $response can return OK or Cancel
                 if ( $response -eq 'OK' ) {
+                    Start-PopUp "Downloading Winget Intune Packager $WIPLatestVersion..."
                     $WIPDlLink = "https://github.com/Romanitho/WingetIntunePackager/releases/download/v$WIPLatestVersion/WingetIntunePackager.exe"
-                    Invoke-WebRequest -Uri $WIPDlLink -OutFile $WIPSaveFile.FileName
+                    Invoke-WebRequest -Uri $WIPDlLink -OutFile $WIPSaveFile.FileName -UseBasicParsing
                     $UpdateWindow.DialogResult = [System.Windows.Forms.DialogResult]::OK
                     $UpdateWindow.Close()
+                    Start-PopUp "Starting Winget Intune Packager $WIPLatestVersion..."
                     Start-Process -FilePath $WIPSaveFile.FileName
+                    Start-Sleep 5
+                    Close-PopUp
                     Exit 0
                 }
             })
@@ -594,46 +596,51 @@ function Get-WIPLatestVersion {
 
         ## RETURNS ##
         #Show Wait form
-        Close-PopUp
         $UpdateWindow.ShowDialog() | Out-Null
-
     }
-    else {
-        #Show Wait form
-        Close-PopUp
-    }
-
 }
 
 
 
 ### PREREQUISITES ###
 
-Start-PopUp "Loading..."
+Start-PopUp "Starting..."
 
 # IntuneWin32App module needed
 $IntuneWin32App = Get-InstalledModule "IntuneWin32App" -ErrorAction SilentlyContinue
 if (!$IntuneWin32App) {
     $NuGet = Get-PackageProvider -name "nuget" -ListAvailable -ErrorAction SilentlyContinue
     if (!$NuGet) {
-        Start-PopUp "Installing NuGet..."
-        Start-Process 'powershell.exe' -Verb RunAs -ArgumentList '-ExecutionPolicy ByPass -Command "Install-PackageProvider -Name nuget -Force"' -Wait
+        Start-PopUp "Installing NuGet... (Admin rights needed)"
+        $SP = Start-Process 'powershell.exe' -Verb RunAs -ArgumentList '-ExecutionPolicy ByPass -Command "Install-PackageProvider -Name nuget -Force"' -Wait -PassThru
+        if ($SP.ExitCode -ne "0") {
+            $PopUpLabel.Foreground = "red"
+            Start-PopUp "NuGet is not installed. Closing..."
+            Start-Sleep 3
+            Close-PopUp
+            Exit 1
+        }
     }
-    Start-PopUp "Installing IntuneWin32App..."
-    Start-Process 'powershell.exe' -Verb RunAs -ArgumentList '-ExecutionPolicy ByPass -Command "Install-Module -Name "IntuneWin32App" -force"' -Wait
+    Start-PopUp "Installing IntuneWin32App... (Admin rights needed)"
+    $SP = Start-Process 'powershell.exe' -Verb RunAs -ArgumentList '-ExecutionPolicy ByPass -Command "Install-Module -Name "IntuneWin32App" -force"' -Wait -PassThru
+    if ($SP.ExitCode -ne "0") {
+        $PopUpLabel.Foreground = "red"
+        Start-PopUp "IntuneWin32App PS Module is not installed. Closing..."
+        Start-Sleep 3
+        Close-PopUp
+        Exit 1
+    }
+
 }
 #Create Temp folder
 if (!(Test-Path $Location)) {
     New-Item -ItemType Directory -Force -Path $Location | Out-Null
 }
 #Encoding & error management
-$null = cmd /c ''
-$Global:OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
-#$ProgressPreference = "SilentlyContinue"
-$IconBase64 = [Convert]::FromBase64String("AAABAAEAEBAAAAAAAABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAQAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAUKEUwPHjCLECAzkRAgM5EQIDORECAzkRAgM5EQIDORECAzkRAgM5EPHjCOBQoRXwAAABQAAAAAAAAAABUoPpAyYZv9NWaj/zVmpP81ZqT/NWak/zVmpP81ZqT/NWak/zVmpP81ZqT/NWaj/zJgmv0TJDmtAAAAFAkQGC01ZZ/9MGWh/yFfl/8oY5z/IV+X/y5loP81aKT/W4S1/8XKz/+5vcL/ub3C/7m9wv99lLH/KU56/QYKD1wgOVZcOGyn/zFpov8eX5X/Lmeg/x5flf8vaKH/OGyn/2GKuf+2trb/n5+f/5+fn/+Tk5P/Z3uS/ypTf/8QHi2LJURjXzpxqv85cKn/Kmie/zlxqv8raJ//OHCo/zpxqv9Tg7X/obbM/5uxxv+QobP/d4eX/1Z0kv8sVoL/EiEwjCdHZl88daz/PHWs/zx1rP88daz/PHWs/zx1rP88daz/PHWs/zx1rP82apv/LlqE/y5ZhP8uWYT/LlmE/xMjMosrTGpfPnqv/z56r/8+eq//Pnqv/z56r/8+eq//Pnqv/z56r/84bp7/L12G/y9dhv8vXYb/L12G/y9dhv8VJTSKL1FtX0B/sv9Af7L/QH+y/0B/sv9Af7L/QH+y/0B/sv86cqD/MWGI/zFhiP8xYYj/MWGI/zFhiP8xYYj/Fyc1iTNWcF9DhLX/Q4S1/0OEtf9DhLX/Q4S1/0OEtf88dqL/M2SK/zNkiv8zZIr/M2SK/zNkiv8zZIr/M2SK/xkqN4g4WnJfRYi3/0WIt/9FiLf/RYi3/0WIt/9Girj/U5i3/1edu/83a4//NWiM/zVojP81aIz/NWiM/zdulP8fNUSHPF91X0eNuv9Hjbr/R426/0eNuv9Hjbr/SI67/1igvv9cpsP/OW+R/zZsjv82bI7/NmyO/zlylv9Girb/IzpIhUBjd19Jkb3/SZG9/0mRvf9Jkb3/SZG9/0uTvf9Yob7/XafD/zpyk/84b5D/OG+Q/zt1mP9Ij7n/SZG9/yU8SoRHaHpbS5a//0uWv/9Llr//S5a//0uWv/9Nl8D/WaO//12oxP88dpX/OXOS/z15mv9Kk7v/S5a//0uWv/8oPUl9QFRfIVuixvtOm8L/TpvC/06bwv9Om8L/T5zC/1mkwP9eqcX/PXmX/z58nP9Ml77/TpvC/06bwv9ZoMT8ExkdPwAAAAB4obZsY6jK+0+dw/9OnMP/TpzD/1Cdw/9apMD/XqnF/0GBn/9Nmb//TpzD/0+dw/9hpcf8OlFchQAAAAIAAAAAAAAAAEpdZyFhfIlbYXyKX2F8il9ifYpfZX+JX2eBil9he4hfYnyKX2J8il9bc39cHiYqKQAAAAAAAAAAgAEAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAwAMAAA==")
+[Console]::InputEncoding = [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
+$ProgressPreference = "SilentlyContinue"
 
 Close-PopUp
-
 
 
 
@@ -649,4 +656,5 @@ Get-WingetCmd
 Start-InstallGUI
 
 #Remove temp items
+Start-Sleep 3
 Remove-Item $Location -Recurse -Force -Confirm:$false
