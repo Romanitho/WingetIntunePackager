@@ -577,10 +577,12 @@ function Get-WIPLatestVersion {
                 $WIPSaveFile.FileName = "WingetIntunePackager_$WIPLatestVersion.exe"
                 $response = $WIPSaveFile.ShowDialog() # $response can return OK or Cancel
                 if ( $response -eq 'OK' ) {
-                    $WiGuiDlLink = "https://github.com/Romanitho/WingetIntunePackager/releases/download/v$WIPLatestVersion/WingetIntunePackager.exe"
-                    Invoke-WebRequest -Uri $WiGuiDlLink -OutFile $WiGuiSaveFile.FileName
-                    $WiGuiUpdate.Close()
-                    $WiGuiUpdate.DialogResult = [System.Windows.Forms.DialogResult]::OK
+                    $WIPDlLink = "https://github.com/Romanitho/WingetIntunePackager/releases/download/v$WIPLatestVersion/WingetIntunePackager.exe"
+                    Invoke-WebRequest -Uri $WIPDlLink -OutFile $WIPSaveFile.FileName
+                    $UpdateWindow.DialogResult = [System.Windows.Forms.DialogResult]::OK
+                    $UpdateWindow.Close()
+                    Start-Process -FilePath $WIPSaveFile.FileName
+                    Exit 0
                 }
             })
 
