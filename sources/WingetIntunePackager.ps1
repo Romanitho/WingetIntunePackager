@@ -249,9 +249,9 @@ Function Start-PopUp ($Message) {
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:local="clr-namespace:WiGui_v3"
+    xmlns:local="clr-namespace:Winget_Intune_Packager"
     mc:Ignorable="d"
-    Title="Winget Intune Packager $WingetIntunePackager" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" Topmost="True" Width="280" MinHeight="120" SizeToContent="Height">
+    Title="Winget Intune Packager $WingetIntunePackager" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" Topmost="True" Width="280" MinHeight="130" SizeToContent="Height">
     <Grid>
         <TextBlock x:Name="PopUpLabel" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap" Margin="20"/>
     </Grid>
@@ -533,7 +533,7 @@ function Get-WIPLatestVersion {
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:local="clr-namespace:WiGui_v3"
+    xmlns:local="clr-namespace:Winget_Intune_Packager"
     mc:Ignorable="d"
     Title="Winget Intune Packager $WingetIntunePackager - Update available" ResizeMode="NoResize" SizeToContent="WidthAndHeight" WindowStartupLocation="CenterScreen" Topmost="True">
     <Grid>
