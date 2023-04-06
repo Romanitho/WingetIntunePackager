@@ -637,7 +637,8 @@ if (!(Test-Path $Location)) {
     New-Item -ItemType Directory -Force -Path $Location | Out-Null
 }
 #Encoding & error management
-[Console]::InputEncoding = [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
+$null = cmd /c ''
+$Global:OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
 $ProgressPreference = "SilentlyContinue"
 
 Close-PopUp
