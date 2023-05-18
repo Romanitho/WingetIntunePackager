@@ -510,7 +510,7 @@ function Invoke-IntunePackage ($Win32AppArgs) {
     }
 
     # Create requirement rule for all platforms and Windows 10 2004
-    $RequirementRule = New-IntuneWin32AppRequirementRule -Architecture "All" -MinimumSupportedWindowsRelease "2004"
+    $RequirementRule = New-IntuneWin32AppRequirementRule -Architecture "All" -MinimumSupportedWindowsRelease "w10_2004"
 
     # Create MSI detection rule
     $DetectionRule = New-IntuneWin32AppDetectionRuleScript -ScriptFile "$DetectionScriptPath\$DetectionScriptFile"
