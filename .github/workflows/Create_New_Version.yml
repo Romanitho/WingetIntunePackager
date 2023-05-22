@@ -65,15 +65,21 @@ jobs:
         shell: powershell
         working-directory: .
         run: |
-          'Setting Version Number'
+          "Setting Version Number"
           [String]$Version="$env:Version"
           "Version is $Version"
-          'Installing Module PS2EXE'
+          "Installing Module PS2EXE"
           Install-Module -Name ps2exe -force
-          'Impoting Module PS2EXE'
+          "Impoting Module PS2EXE"
           Import-Module -Name ps2exe
-          'Creating EXE'
-          Invoke-PS2EXE -inputFile .\sources\WingetIntunePackager.ps1 -outputFile .\WingetIntunePackager.exe -iconFile .\sources\WingetIntunePackager.ico  -title 'Winget Intune Packager' -version $Version -copyright 'Romanitho' -noConsole -noerror -Verbose -ErrorAction Stop
+          "Setting App Info"
+          $Input = ".\sources\WingetIntunePackager.ps1"
+          $Output = ".\WingetIntunePackager.exe"
+          $Icon = ".\sources\WingetIntunePackager.ico"
+          $Title = "Winget Intune Packager"
+          $Description = "Intune Winget app packager"
+          "Creating EXE"
+          Invoke-PS2EXE -inputFile $Input -outputFile $Output -iconFile $Icon  -title $Title -version $Version -description $Description -copyright 'Romanitho' -noConsole -noerror -Verbose -ErrorAction Stop
 
       - name: Create release
         uses: "ncipollo/release-action@v1.12.0"
