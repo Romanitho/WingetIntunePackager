@@ -143,7 +143,17 @@ function Start-InstallGUI {
                 $IDComboBox.Foreground = "Green"
                 $IDComboBox.Tag = "Ok"
                 $VersionTextBox.Foreground = "Green"
-                $AppIcon.Source = $AppInfo.Icon
+                if ($IsCoreCLR) {
+                    [String]$ImageAsBase64 = [convert]::ToBase64String((Get-Content $AppInfo.Icon -AsByteStream))
+                } else {
+                    [String]$ImageAsBase64 = [convert]::ToBase64String((Get-Content $AppInfo.Icon -Encoding Byte))
+                }
+                $ObjBitmapImage = New-Object System.Windows.Media.Imaging.BitmapImage
+                $ObjBitmapImage.BeginInit()
+                $ObjBitmapImage.StreamSource = [System.IO.MemoryStream][System.Convert]::FromBase64String($ImageAsBase64)
+                $ObjBitmapImage.EndInit()
+                $ObjBitmapImage.Freeze()
+                $AppIcon.Source = $ObjBitmapImage
                 if ($ConnectionStatusTextBlock.Tag -eq "Ok") {
                     $CreateButton.IsEnabled = $true
                 }
@@ -484,7 +494,7 @@ function Get-WingetAppInfo ($AppID, $AppVersion) {
     }
 
     #Get Google Image app icon
-    $SearchImageUrl = "https://www.google.com/search?tbm=isch&q=$($AppInfo.PackageName.replace('.','+'))+logo"
+    $SearchImageUrl = "https://www.google.com/search?tbm=isch&q=$($AppInfo.PackageName.replace('.','+'))+logo+transparent"
     $IconUrl = ((Invoke-WebRequest -Uri $SearchImageUrl).Images | Select -ExpandProperty src)[1]
     $AppInfo.Icon = "$Location\$($AppInfo.ID).jpg"
     Invoke-WebRequest -Uri $IconUrl -OutFile $($AppInfo.Icon)
@@ -499,6 +509,7 @@ function Invoke-IntunePackage ($Win32AppArgs) {
     $DetectionScriptFile = "winget-detect.ps1"
     $DetectionScriptContent = Get-Content "$DetectionScriptPath\$DetectionScriptFile"
     $DetectionScriptContent[1] = '$AppToDetect = "' + $($AppInfo.id) + '"'
+    $DetectionScriptContent[2] = '$VersionToDetect = "' + $($AppInfo.Version) + '"'
     $DetectionScriptContent | Set-Content -Path "$DetectionScriptPath\$DetectionScriptFile" -Force
     $IntuneWinFile = "$DetectionScriptPath\winget-install.intunewin"
     if (!(Test-Path $IntuneWinFile)) {
