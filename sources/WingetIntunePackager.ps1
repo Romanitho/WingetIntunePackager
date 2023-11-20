@@ -11,13 +11,15 @@ https://github.com/Romanitho/Winget-Intune-Packager
 #Winget Intune Packager version
 $Script:WingetIntunePackager = "1.1.6"
 #Winget-Install Github Link
-$Script:WIGithubLink = "https://github.com/Romanitho/Winget-Install/archive/refs/tags/v1.10.2.zip"
+$Script:WIGithubLink = "https://github.com/Romanitho/Winget-Install/archive/refs/tags/v1.11.2.zip"
 #Winget Intune Packager Icon Base64
 $Script:IconBase64 = [Convert]::FromBase64String("AAABAAEAEBAAAAAAAABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAQAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAUKEUwPHjCLECAzkRAgM5EQIDORECAzkRAgM5EQIDORECAzkRAgM5EPHjCOBQoRXwAAABQAAAAAAAAAABUoPpAyYZv9NWaj/zVmpP81ZqT/NWak/zVmpP81ZqT/NWak/zVmpP81ZqT/NWaj/zJgmv0TJDmtAAAAFAkQGC01ZZ/9MGWh/yFfl/8oY5z/IV+X/y5loP81aKT/W4S1/8XKz/+5vcL/ub3C/7m9wv99lLH/KU56/QYKD1wgOVZcOGyn/zFpov8eX5X/Lmeg/x5flf8vaKH/OGyn/2GKuf+2trb/n5+f/5+fn/+Tk5P/Z3uS/ypTf/8QHi2LJURjXzpxqv85cKn/Kmie/zlxqv8raJ//OHCo/zpxqv9Tg7X/obbM/5uxxv+QobP/d4eX/1Z0kv8sVoL/EiEwjCdHZl88daz/PHWs/zx1rP88daz/PHWs/zx1rP88daz/PHWs/zx1rP82apv/LlqE/y5ZhP8uWYT/LlmE/xMjMosrTGpfPnqv/z56r/8+eq//Pnqv/z56r/8+eq//Pnqv/z56r/84bp7/L12G/y9dhv8vXYb/L12G/y9dhv8VJTSKL1FtX0B/sv9Af7L/QH+y/0B/sv9Af7L/QH+y/0B/sv86cqD/MWGI/zFhiP8xYYj/MWGI/zFhiP8xYYj/Fyc1iTNWcF9DhLX/Q4S1/0OEtf9DhLX/Q4S1/0OEtf88dqL/M2SK/zNkiv8zZIr/M2SK/zNkiv8zZIr/M2SK/xkqN4g4WnJfRYi3/0WIt/9FiLf/RYi3/0WIt/9Girj/U5i3/1edu/83a4//NWiM/zVojP81aIz/NWiM/zdulP8fNUSHPF91X0eNuv9Hjbr/R426/0eNuv9Hjbr/SI67/1igvv9cpsP/OW+R/zZsjv82bI7/NmyO/zlylv9Girb/IzpIhUBjd19Jkb3/SZG9/0mRvf9Jkb3/SZG9/0uTvf9Yob7/XafD/zpyk/84b5D/OG+Q/zt1mP9Ij7n/SZG9/yU8SoRHaHpbS5a//0uWv/9Llr//S5a//0uWv/9Nl8D/WaO//12oxP88dpX/OXOS/z15mv9Kk7v/S5a//0uWv/8oPUl9QFRfIVuixvtOm8L/TpvC/06bwv9Om8L/T5zC/1mkwP9eqcX/PXmX/z58nP9Ml77/TpvC/06bwv9ZoMT8ExkdPwAAAAB4obZsY6jK+0+dw/9OnMP/TpzD/1Cdw/9apMD/XqnF/0GBn/9Nmb//TpzD/0+dw/9hpcf8OlFchQAAAAIAAAAAAAAAAEpdZyFhfIlbYXyKX2F8il9ifYpfZX+JX2eBil9he4hfYnyKX2J8il9bc39cHiYqKQAAAAAAAAAAgAEAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAwAMAAA==")
 #Temp folder
 $Script:Location = "$Env:ProgramData\WingetIntunePackagerTemp"
 #Load assemblies
 Add-Type -AssemblyName System.Windows.Forms, System.Drawing, PresentationFramework
+#Set IntuneWin32App Required Version
+$IntuneWin32AppVers = "1.3.6"
 
 
 ### FUNCTIONS ###
@@ -510,13 +512,12 @@ function Invoke-IntunePackage ($Win32AppArgs) {
     }
 
     # Create requirement rule for all platforms and Windows 10 2004
-    $RequirementRule = New-IntuneWin32AppRequirementRule -Architecture "All" -MinimumSupportedWindowsRelease "w10_2004"
+    $RequirementRule = New-IntuneWin32AppRequirementRule -Architecture "All" -MinimumSupportedWindowsRelease "2004"
 
     # Create MSI detection rule
     $DetectionRule = New-IntuneWin32AppDetectionRuleScript -ScriptFile "$DetectionScriptPath\$DetectionScriptFile"
 
     # Convert image file to icon
-    echo = $($AppInfo.Icon)
     $Icon = New-IntuneWin32AppIcon -FilePath $AppInfo.Icon
 
     # Add parameters to table for the Win32 app
@@ -530,10 +531,10 @@ function Invoke-IntunePackage ($Win32AppArgs) {
         $Win32AppArgs.Publisher = $AppInfo.Publisher
     }
     if ($AppInfo.PackageUrl) {
-        $Win32AppArgs.InformationURL = $AppInfo.PackageUrl.replace("'","")
+        $Win32AppArgs.InformationURL = $AppInfo.PackageUrl.replace("'", "")
     }
     if ($AppInfo.PrivacyUrl) {
-        $Win32AppArgs.PrivacyURL = $AppInfo.PrivacyUrl.replace("'","")
+        $Win32AppArgs.PrivacyURL = $AppInfo.PrivacyUrl.replace("'", "")
     }
     if ($AppInfo.Author) {
         $Win32AppArgs.Developer = $AppInfo.Author
@@ -636,12 +637,12 @@ function Get-WIPLatestVersion {
 Start-PopUp "Starting..."
 
 # IntuneWin32App module needed
-$IntuneWin32App = Get-InstalledModule "IntuneWin32App" -ErrorAction SilentlyContinue
+$IntuneWin32App = Get-InstalledModule "IntuneWin32App" -RequiredVersion $IntuneWin32AppVers -ErrorAction SilentlyContinue
 if (!$IntuneWin32App) {
     $NuGet = Get-PackageProvider -name "nuget" -ListAvailable -ErrorAction SilentlyContinue
     if (!$NuGet) {
         Start-PopUp "Installing NuGet... (Admin rights needed)"
-        $SP = Start-Process 'powershell.exe' -Verb RunAs -ArgumentList '-ExecutionPolicy ByPass -Command "Install-PackageProvider -Name nuget -Force"' -Wait -PassThru
+        $SP = Start-Process "powershell.exe" -Verb RunAs -ArgumentList "-ExecutionPolicy ByPass -Command ""Install-PackageProvider -Name nuget -Force""" -Wait -PassThru
         if ($SP.ExitCode -ne "0") {
             $PopUpLabel.Foreground = "red"
             Start-PopUp "NuGet is not installed. Closing..."
@@ -651,7 +652,7 @@ if (!$IntuneWin32App) {
         }
     }
     Start-PopUp "Installing IntuneWin32App... (Admin rights needed)"
-    $SP = Start-Process 'powershell.exe' -Verb RunAs -ArgumentList '-ExecutionPolicy ByPass -Command "Install-Module -Name "IntuneWin32App" -force"' -Wait -PassThru
+    $SP = Start-Process "powershell.exe" -Verb RunAs -ArgumentList "-ExecutionPolicy ByPass -Command ""Install-Module -Name IntuneWin32App -RequiredVersion $($IntuneWin32AppVers) -Force""" -Wait -PassThru
     if ($SP.ExitCode -ne "0") {
         $PopUpLabel.Foreground = "red"
         Start-PopUp "IntuneWin32App PS Module is not installed. Closing..."
@@ -659,8 +660,8 @@ if (!$IntuneWin32App) {
         Close-PopUp
         Exit 1
     }
-
 }
+Import-Module -Name IntuneWin32App -RequiredVersion $IntuneWin32AppVers
 #Create Temp folder
 if (!(Test-Path $Location)) {
     New-Item -ItemType Directory -Force -Path $Location | Out-Null
@@ -668,7 +669,7 @@ if (!(Test-Path $Location)) {
 #Encoding & error management
 $null = cmd /c ''
 $Global:OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
-$ProgressPreference = "SilentlyContinue"
+$Global:ProgressPreference = "SilentlyContinue"
 
 Close-PopUp
 
@@ -686,5 +687,4 @@ Get-WingetCmd
 Start-InstallGUI
 
 #Remove temp items
-Start-Sleep 3
-Remove-Item $Location -Recurse -Force -Confirm:$false
+Start-Process powershell -ArgumentList "-WindowStyle Hidden -Command & {Sleep 3; Remove-Item $Location -Recurse -Force -Confirm:0}"
