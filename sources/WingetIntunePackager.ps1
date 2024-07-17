@@ -19,8 +19,7 @@ $Script:Location = "$Env:ProgramData\WingetIntunePackagerTemp"
 #Load assemblies
 Add-Type -AssemblyName System.Windows.Forms, System.Drawing, PresentationFramework
 #Set IntuneWin32App Required Version
-$IntuneWin32AppVers = "1.3.6"
-
+$IntuneWin32AppVers = "1.4.4"
 
 ### FUNCTIONS ###
 
@@ -77,7 +76,11 @@ function Start-InstallGUI {
             <Image x:Name="AppIcon" Height="90" Width="90" HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </Grid>
         <Button x:Name="ConnectButton" Content="Connect" HorizontalAlignment="Right" VerticalAlignment="Top" Width="90" Height="24" Margin="0,330,10,0"/>
-        <TextBlock x:Name="ConnectionStatusTextBlock" HorizontalAlignment="Left" Margin="10,354,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="Not connected." Foreground="Red"/>
+        <TextBlock x:Name="ConnectionStatusTextBlock" HorizontalAlignment="Left" Margin="614,359,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="Not connected." Foreground="Red"/>
+        <Label x:Name="IntuneClientID" Content="Intune Client ID:" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="10,354,0,0"/>
+        <TextBox x:Name="IntuneClientIDTextbox" VerticalAlignment="Top" Margin="10,380,0,0" Height="24" VerticalContentAlignment="Center" Width="280" HorizontalAlignment="Left"/>
+        <TextBox x:Name="IntuneRedirectUriTextbox" VerticalAlignment="Top" Margin="300,380,0,0" Height="24" VerticalContentAlignment="Center" Width="280" HorizontalAlignment="Left"/>
+        <Label x:Name="IntuneRedirectUri" Content="Intune Redirect Uri:" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="5,357,0,0"/>
 
     </Grid>
 </Window>
@@ -186,7 +189,7 @@ function Start-InstallGUI {
 
     $ConnectButtonAction = {
         Start-PopUp "Connecting..."
-        $ConnectionStatus = Connect-MSIntuneGraph -TenantID $IntuneTenantIDTextbox.Text
+        $ConnectionStatus = Connect-MSIntuneGraph -TenantID $IntuneTenantIDTextbox.Text -ClientID $IntuneClientIDTextbox.Text -RedirectUri $IntuneRedirectUriTextbox.Text
         if ($ConnectionStatus.ExpiresOn) {
             $ConnectionStatusTextBlock.Foreground = "Green"
             $ConnectionStatusTextBlock.Text = "Connection expires on: $($ConnectionStatus.ExpiresOn.ToLocalTime())"
@@ -512,7 +515,7 @@ function Invoke-IntunePackage ($Win32AppArgs) {
     }
 
     # Create requirement rule for all platforms and Windows 10 2004
-    $RequirementRule = New-IntuneWin32AppRequirementRule -Architecture "All" -MinimumSupportedWindowsRelease "2004"
+    $RequirementRule = New-IntuneWin32AppRequirementRule -Architecture "All" -MinimumSupportedWindowsRelease "W10_1607"
 
     # Create MSI detection rule
     $DetectionRule = New-IntuneWin32AppDetectionRuleScript -ScriptFile "$DetectionScriptPath\$DetectionScriptFile"
