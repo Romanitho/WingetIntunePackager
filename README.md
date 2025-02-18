@@ -11,3 +11,11 @@ Winget Intune app packager
 ![image](https://user-images.githubusercontent.com/96626929/229953293-937dc902-d1d7-4fdb-8146-03d3052a584a.png)
 
 This tool auto create Intune app package from Winget app repository using https://github.com/Romanitho/Winget-Install
+
+## Configuration file
+You can place an configuration file with the name config.env in the same folder as the executable. The configuration file should be in the following format:
+```
+tenant_id=
+client_id=
+redirect_uri=https://login.microsoftonline.com/common/oauth2/nativeclient
+```
