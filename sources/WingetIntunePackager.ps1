@@ -75,8 +75,9 @@ function Start-InstallGUI {
         <Grid x:Name="GridIcon" VerticalAlignment="Top" HorizontalAlignment="Right" Width="90" Height="90" Margin="0,152,10,0" Background="White">
             <Image x:Name="AppIcon" Height="90" Width="90" HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </Grid>
-        <Button x:Name="ConnectButton" Content="Connect" HorizontalAlignment="Right" VerticalAlignment="Top" Width="90" Height="24" Margin="0,330,10,0"/>
-        <TextBlock x:Name="ConnectionStatusTextBlock" HorizontalAlignment="Left" Margin="614,359,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="Not connected." Foreground="Red"/>
+        <Button x:Name="LoadConfigButton" Content="Load config" HorizontalAlignment="Right" VerticalAlignment="Top" Width="90" Height="24" Margin="0,308,10,0"/>
+        <Button x:Name="ConnectButton" Content="Connect" HorizontalAlignment="Right" VerticalAlignment="Top" Width="90" Height="24" Margin="0,337,10,0"/>
+        <TextBlock x:Name="ConnectionStatusTextBlock" HorizontalAlignment="Left" Margin="614,362,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="Not connected." Foreground="Red"/>
         <Label x:Name="IntuneClientID" Content="Intune Client ID:" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="10,354,0,0"/>
         <TextBox x:Name="IntuneClientIDTextbox" VerticalAlignment="Top" Margin="10,380,0,0" Height="24" VerticalContentAlignment="Center" Width="280" HorizontalAlignment="Left"/>
         <TextBox x:Name="IntuneRedirectUriTextbox" VerticalAlignment="Top" Margin="300,380,0,0" Height="24" VerticalContentAlignment="Center" Width="280" HorizontalAlignment="Left"/>
@@ -85,7 +86,6 @@ function Start-InstallGUI {
     </Grid>
 </Window>
 "@
-
     #Create window
     $inputXML = $inputXML -replace 'mc:Ignorable="d"', '' -replace "x:N", 'N' -replace '^<Win.*', '<Window'
     [xml]$XAML = $inputXML -f $WingetIntunePackager
@@ -100,7 +100,6 @@ function Start-InstallGUI {
     $FormObjects | ForEach-Object {
         Set-Variable -Name "$($_.Name)" -Value $WingetIntunePackagerForm.FindName($_.Name) -Scope Script
     }
-
     #Icon Dialog box
     $OpenIconDialog = New-Object System.Windows.Forms.OpenFileDialog
     $OpenIconDialog.Filter = "Image Files (*.jpg,*.jpeg,*.png)|*.jpg;*.jpeg;*.png"
@@ -186,6 +185,26 @@ function Start-InstallGUI {
     $ClearButton.add_click({
             $AppIcon.Source = $AppInfo.Icon = $null
         })
+
+    $LoadConfigButton.add_click({
+        #Try to load configuration
+        try {
+            # $ScriptPath
+            # if ($MyInvocation.MyCommand.CommandType -eq "ExternalScript"){
+            #     $ScriptPath = Split-Path -Parent -Path $MyInvocation.MyCommand.Definition }
+            # else { 
+            #     $ScriptPath = Split-Path -Parent -Path ([Environment]::GetCommandLineArgs()[0]) 
+            #     if (!$ScriptPath){ $ScriptPath = "." } 
+            # }
+            $config = Get-Content -Path .\config.env | ConvertFrom-StringData
+        }
+        catch {
+            Write-Verbose "Failed to read configuration file: $_."
+        }
+        $IntuneTenantIDTextbox.Text = $config.tenant_id
+        $IntuneClientIDTextbox.Text = $config.client_id
+        $IntuneRedirectUriTextbox.Text = $config.redirect_uri
+    })
 
     $ConnectButtonAction = {
         Start-PopUp "Connecting..."
