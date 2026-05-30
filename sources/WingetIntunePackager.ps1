@@ -6,7 +6,6 @@ Package Winget App to Intune with Winget-Install
 https://github.com/Romanitho/Winget-Intune-Packager
 #>
 
-#Requires -RunAsAdministrator
 #Requires -PSEdition Desktop 
 
 ### APP INFO ###
@@ -538,9 +537,14 @@ function Get-WingetAppInfo ($AppID, $AppVersion) {
     if ($images.Count -gt 1) {
         $IconUrl = ($images | Select-Object -ExpandProperty src)[1]
     }
-    $AppInfo.Icon = "$Location\$($AppInfo.ID).jpg"
     if (-not [string]::IsNullOrEmpty($IconUrl)) {
-        Invoke-WebRequest -Uri $IconUrl -OutFile $($AppInfo.Icon) -UseBasicParsing
+        $AppInfo.Icon = "$Location\$($AppInfo.ID).jpg"
+        try {
+            Invoke-WebRequest -Uri $IconUrl -OutFile $AppInfo.Icon -UseBasicParsing
+        }
+        catch {
+            $AppInfo.Icon = $null
+        }
     }
 }
 
