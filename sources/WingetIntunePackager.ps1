@@ -344,7 +344,7 @@ Function Start-PopUp ($Message) {
         $PopUpWindow.Icon = $IconBase64
 
         #Store Form Objects In PowerShell
-        $XAML.SelectNodes("//*[@Name]") | foreach {
+        $XAML.SelectNodes("//*[@Name]") | ForEach-Object {
             Set-Variable -Name "$($_.Name)" -Value $PopUpWindow.FindName($_.Name) -Scope Script
         }
 
