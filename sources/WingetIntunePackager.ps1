@@ -534,9 +534,10 @@ function Get-WingetAppInfo ($AppID, $AppVersion) {
 
     #Get Google Image app icon
     $SearchImageUrl = "https://www.google.com/search?tbm=isch&q=$($AppInfo.PackageName.replace('.','+'))+logo"
-    $IconUrl = ((Invoke-WebRequest -Uri $SearchImageUrl).Images | Select -ExpandProperty src)[1]
+    $IconUrl = ((Invoke-WebRequest -Uri $SearchImageUrl -UseBasicParsing).Images |
+        Select-Object -ExpandProperty src)[1]
     $AppInfo.Icon = "$Location\$($AppInfo.ID).jpg"
-    Invoke-WebRequest -Uri $IconUrl -OutFile $($AppInfo.Icon)
+    Invoke-WebRequest -Uri $IconUrl -OutFile $($AppInfo.Icon) -UseBasicParsing
 }
 
 function Invoke-IntunePackage ($Win32AppArgs) {
