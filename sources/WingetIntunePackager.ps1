@@ -213,6 +213,18 @@ function Start-InstallGUI {
 
     $ConnectButtonAction = {
         Start-PopUp "Connecting..."
+        if (
+            [string]::IsNullOrWhiteSpace($IntuneTenantIDTextbox.Text) `
+            -or [string]::IsNullOrWhiteSpace($IntuneClientIDTextbox.Text) `
+            -or [string]::IsNullOrWhiteSpace($IntuneRedirectUriTextbox.Text)
+        ) {
+            $ConnectionStatusTextBlock.Foreground = "Red"
+            $ConnectionStatusTextBlock.Text = "Please fill in all fields."
+            $ConnectionStatusTextBlock.Tag = $null
+            $CreateButton.IsEnabled = $false
+            Close-PopUp
+            return
+        }
         $ConnectionStatus = Connect-MSIntuneGraph -TenantID $IntuneTenantIDTextbox.Text -ClientID $IntuneClientIDTextbox.Text -RedirectUri $IntuneRedirectUriTextbox.Text
         if ($ConnectionStatus.ExpiresOn) {
             $ConnectionStatusTextBlock.Foreground = "Green"
