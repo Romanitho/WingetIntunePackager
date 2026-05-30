@@ -11,7 +11,7 @@ https://github.com/Romanitho/Winget-Intune-Packager
 ### APP INFO ###
 
 #Winget Intune Packager version
-$Script:WingetIntunePackager = "1.2.2"
+$Script:WingetIntunePackager = "1.2.3"
 #Winget-Install Github Link
 $Script:WIGithubLink = "https://github.com/Romanitho/Winget-Install/archive/refs/tags/v1.11.3.zip"
 #Winget Intune Packager Icon Base64
