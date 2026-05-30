@@ -6,6 +6,9 @@ Package Winget App to Intune with Winget-Install
 https://github.com/Romanitho/Winget-Intune-Packager
 #>
 
+#Requires -RunAsAdministrator
+#Requires -PSEdition Desktop 
+
 ### APP INFO ###
 
 #Winget Intune Packager version
@@ -668,7 +671,7 @@ function Get-WIPLatestVersion {
 Start-PopUp "Starting..."
 
 # IntuneWin32App module needed
-$IntuneWin32App = Get-InstalledModule "IntuneWin32App" -RequiredVersion $IntuneWin32AppVers -ErrorAction SilentlyContinue
+$IntuneWin32App = Get-Module "IntuneWin32App" -ListAvailable | Where-Object { $PSItem.Version -eq $IntuneWin32AppVers }
 if (!$IntuneWin32App) {
     $NuGet = Get-PackageProvider -name "nuget" -ListAvailable -ErrorAction SilentlyContinue
     if (!$NuGet) {
