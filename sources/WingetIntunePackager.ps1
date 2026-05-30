@@ -285,20 +285,27 @@ function Start-InstallGUI {
                 "AllowAvailableUninstall" = $AllowUninstallCheckbox.IsChecked
                 "InstallExperience" = $InstallUserContext
             }
-            Invoke-IntunePackage $Win32AppArgs
-            $AppInfo = @()
-            $SearchTextBox.Text = ""
-            $IDComboBox.Text = ""
-            $IDComboBox.Items.Clear()
-            $VersionTextBox.Text = ""
-            $OverrideTextBox.Text = ""
-            $IntuneDescriptionTextBox.Text = ""
-            $WhitelistCheckbox.IsChecked = $false
-            $AllowUninstallCheckbox.IsChecked = $false
-            $InstallUserContextCheckbox.IsChecked = $false
-            $CreateButton.IsEnabled = $false
-            $AppIcon.Source = $null
-            Close-PopUp
+            Invoke-IntunePackage $Win32AppArgs -WarningVariable warning
+
+            if([string]::IsNullOrEmpty($warning)) {
+                $AppInfo = @()
+                $SearchTextBox.Text = ""
+                $IDComboBox.Text = ""
+                $IDComboBox.Items.Clear()
+                $VersionTextBox.Text = ""
+                $OverrideTextBox.Text = ""
+                $IntuneDescriptionTextBox.Text = ""
+                $WhitelistCheckbox.IsChecked = $false
+                $AllowUninstallCheckbox.IsChecked = $false
+                $InstallUserContextCheckbox.IsChecked = $false
+                $CreateButton.IsEnabled = $false
+                $AppIcon.Source = $null
+                Close-PopUp
+            }
+
+            if (-not [string]::IsNullOrEmpty($warning)) {
+                Start-PopUp $warning
+            }
         })
 
     $GithubLinkLabel.Add_PreviewMouseDown({
@@ -548,7 +555,12 @@ function Get-WingetAppInfo ($AppID, $AppVersion) {
     }
 }
 
-function Invoke-IntunePackage ($Win32AppArgs) {
+function Invoke-IntunePackage () {
+    [CmdletBinding()]
+    param (
+        $Win32AppArgs
+    )
+
     # Package .intunewin file
     if (!(Test-Path "$Location/Winget-Install*")) {
         Get-GithubRepository $WIGithubLink
@@ -574,7 +586,10 @@ function Invoke-IntunePackage ($Win32AppArgs) {
     $DetectionRule = New-IntuneWin32AppDetectionRuleScript -ScriptFile "$DetectionScriptPath\$DetectionScriptFile"
 
     # Convert image file to icon
-    $Icon = New-IntuneWin32AppIcon -FilePath $AppInfo.Icon
+
+    if ($AppInfo.Icon) {
+        $Icon = New-IntuneWin32AppIcon -FilePath $AppInfo.Icon
+    }
 
     # Add parameters to table for the Win32 app
     $Win32AppArgs.DisplayName = $AppInfo.PackageName
@@ -598,7 +613,10 @@ function Invoke-IntunePackage ($Win32AppArgs) {
         $Win32AppArgs.Icon = $Icon
     }
 
-    Add-IntuneWin32App @Win32AppArgs
+    Add-IntuneWin32App @Win32AppArgs -WarningVariable warning
+    $warning | foreach-object {
+        Write-Warning ($warning -join "`n")
+    }
 }
 
 function Get-WIPLatestVersion {
