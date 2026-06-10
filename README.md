@@ -19,7 +19,7 @@ Before using the tool, you must create an app registration in Entra:
 1. Open the **Microsoft Entra admin center**
 1. In Microsoft Entra admin center, click **App registrations**.
 1. In App registrations, click **New registration**.
-1. In Register an application, enter a **Name**, e.g., *WingetIntunepackager*. Leave **Supported account types** set to **Single tenant only**. Under **Redirect URI (optional)**, select **Public client/native (mobile & desktop)** and enter **https://login.microsoftonline.com/common/oauth2/nativeclient**. Click **Register**
+1. In Register an application, enter a **Name**, e.g., *WingetIntunePackager*. Leave **Supported account types** set to **Single tenant only**. Under **Redirect URI (optional)**, select **Public client/native (mobile & desktop)** and enter **https://login.microsoftonline.com/common/oauth2/nativeclient**. Click **Register**
 
 On the **Overview** page, you will find the necessary information for the configuration file (see below).
 
