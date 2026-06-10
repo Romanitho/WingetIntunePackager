@@ -287,7 +287,7 @@ function Start-InstallGUI {
             }
             Invoke-IntunePackage $Win32AppArgs -WarningVariable warning
 
-            if ([string]::IsNullOrEmpty($warning)) {
+            if (-not $warning) {
                 $AppInfo = @()
                 $SearchTextBox.Text = ""
                 $IDComboBox.Text = ""
@@ -303,8 +303,8 @@ function Start-InstallGUI {
                 Close-PopUp
             }
 
-            if (-not [string]::IsNullOrEmpty($warning)) {
-                Start-PopUp ($warning -join "`n")
+            if ($warning) {
+                Start-PopUp (@($warning) -join "`n")
             }
         })
 
