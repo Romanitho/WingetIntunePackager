@@ -6,10 +6,12 @@ Package Winget App to Intune with Winget-Install
 https://github.com/Romanitho/Winget-Intune-Packager
 #>
 
+#Requires -PSEdition Desktop 
+
 ### APP INFO ###
 
 #Winget Intune Packager version
-$Script:WingetIntunePackager = "1.2.2"
+$Script:WingetIntunePackager = "1.2.3"
 #Winget-Install Github Link
 $Script:WIGithubLink = "https://github.com/Romanitho/Winget-Install/archive/refs/tags/v1.11.3.zip"
 #Winget Intune Packager Icon Base64
@@ -210,6 +212,18 @@ function Start-InstallGUI {
 
     $ConnectButtonAction = {
         Start-PopUp "Connecting..."
+        if (
+            [string]::IsNullOrWhiteSpace($IntuneTenantIDTextbox.Text) `
+            -or [string]::IsNullOrWhiteSpace($IntuneClientIDTextbox.Text) `
+            -or [string]::IsNullOrWhiteSpace($IntuneRedirectUriTextbox.Text)
+        ) {
+            $ConnectionStatusTextBlock.Foreground = "Red"
+            $ConnectionStatusTextBlock.Text = "Please fill in all fields."
+            $ConnectionStatusTextBlock.Tag = $null
+            $CreateButton.IsEnabled = $false
+            Close-PopUp
+            return
+        }
         $ConnectionStatus = Connect-MSIntuneGraph -TenantID $IntuneTenantIDTextbox.Text -ClientID $IntuneClientIDTextbox.Text -RedirectUri $IntuneRedirectUriTextbox.Text
         if ($ConnectionStatus.ExpiresOn) {
             $ConnectionStatusTextBlock.Foreground = "Green"
@@ -271,20 +285,27 @@ function Start-InstallGUI {
                 "AllowAvailableUninstall" = $AllowUninstallCheckbox.IsChecked
                 "InstallExperience" = $InstallUserContext
             }
-            Invoke-IntunePackage $Win32AppArgs
-            $AppInfo = @()
-            $SearchTextBox.Text = ""
-            $IDComboBox.Text = ""
-            $IDComboBox.Items.Clear()
-            $VersionTextBox.Text = ""
-            $OverrideTextBox.Text = ""
-            $IntuneDescriptionTextBox.Text = ""
-            $WhitelistCheckbox.IsChecked = $false
-            $AllowUninstallCheckbox.IsChecked = $false
-            $InstallUserContextCheckbox.IsChecked = $false
-            $CreateButton.IsEnabled = $false
-            $AppIcon.Source = $null
-            Close-PopUp
+            Invoke-IntunePackage $Win32AppArgs -WarningVariable warning
+
+            if([string]::IsNullOrEmpty($warning)) {
+                $AppInfo = @()
+                $SearchTextBox.Text = ""
+                $IDComboBox.Text = ""
+                $IDComboBox.Items.Clear()
+                $VersionTextBox.Text = ""
+                $OverrideTextBox.Text = ""
+                $IntuneDescriptionTextBox.Text = ""
+                $WhitelistCheckbox.IsChecked = $false
+                $AllowUninstallCheckbox.IsChecked = $false
+                $InstallUserContextCheckbox.IsChecked = $false
+                $CreateButton.IsEnabled = $false
+                $AppIcon.Source = $null
+                Close-PopUp
+            }
+
+            if (-not [string]::IsNullOrEmpty($warning)) {
+                Start-PopUp $warning
+            }
         })
 
     $GithubLinkLabel.Add_PreviewMouseDown({
@@ -329,7 +350,7 @@ Function Start-PopUp ($Message) {
         $PopUpWindow.Icon = $IconBase64
 
         #Store Form Objects In PowerShell
-        $XAML.SelectNodes("//*[@Name]") | foreach {
+        $XAML.SelectNodes("//*[@Name]") | ForEach-Object {
             Set-Variable -Name "$($_.Name)" -Value $PopUpWindow.FindName($_.Name) -Scope Script
         }
 
@@ -519,12 +540,27 @@ function Get-WingetAppInfo ($AppID, $AppVersion) {
 
     #Get Google Image app icon
     $SearchImageUrl = "https://www.google.com/search?tbm=isch&q=$($AppInfo.PackageName.replace('.','+'))+logo"
-    $IconUrl = ((Invoke-WebRequest -Uri $SearchImageUrl).Images | Select -ExpandProperty src)[1]
-    $AppInfo.Icon = "$Location\$($AppInfo.ID).jpg"
-    Invoke-WebRequest -Uri $IconUrl -OutFile $($AppInfo.Icon)
+    $images = (Invoke-WebRequest -Uri $SearchImageUrl -UseBasicParsing).Images
+    if ($images.Count -gt 1) {
+        $IconUrl = ($images | Select-Object -ExpandProperty src)[1]
+    }
+    if (-not [string]::IsNullOrEmpty($IconUrl)) {
+        $AppInfo.Icon = "$Location\$($AppInfo.ID).jpg"
+        try {
+            Invoke-WebRequest -Uri $IconUrl -OutFile $AppInfo.Icon -UseBasicParsing
+        }
+        catch {
+            $AppInfo.Icon = $null
+        }
+    }
 }
 
-function Invoke-IntunePackage ($Win32AppArgs) {
+function Invoke-IntunePackage () {
+    [CmdletBinding()]
+    param (
+        $Win32AppArgs
+    )
+
     # Package .intunewin file
     if (!(Test-Path "$Location/Winget-Install*")) {
         Get-GithubRepository $WIGithubLink
@@ -550,7 +586,10 @@ function Invoke-IntunePackage ($Win32AppArgs) {
     $DetectionRule = New-IntuneWin32AppDetectionRuleScript -ScriptFile "$DetectionScriptPath\$DetectionScriptFile"
 
     # Convert image file to icon
-    $Icon = New-IntuneWin32AppIcon -FilePath $AppInfo.Icon
+
+    if ($AppInfo.Icon) {
+        $Icon = New-IntuneWin32AppIcon -FilePath $AppInfo.Icon
+    }
 
     # Add parameters to table for the Win32 app
     $Win32AppArgs.DisplayName = $AppInfo.PackageName
@@ -574,7 +613,10 @@ function Invoke-IntunePackage ($Win32AppArgs) {
         $Win32AppArgs.Icon = $Icon
     }
 
-    Add-IntuneWin32App @Win32AppArgs
+    Add-IntuneWin32App @Win32AppArgs -WarningAction SilentlyContinue -WarningVariable warning
+    if ($warning) {
+        $warning | ForEach-Object { Write-Warning $_ }
+    }
 }
 
 function Get-WIPLatestVersion {
@@ -668,7 +710,7 @@ function Get-WIPLatestVersion {
 Start-PopUp "Starting..."
 
 # IntuneWin32App module needed
-$IntuneWin32App = Get-InstalledModule "IntuneWin32App" -RequiredVersion $IntuneWin32AppVers -ErrorAction SilentlyContinue
+$IntuneWin32App = Get-Module "IntuneWin32App" -ListAvailable | Where-Object { $PSItem.Version -eq $IntuneWin32AppVers }
 if (!$IntuneWin32App) {
     $NuGet = Get-PackageProvider -name "nuget" -ListAvailable -ErrorAction SilentlyContinue
     if (!$NuGet) {

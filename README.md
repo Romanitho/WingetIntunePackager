@@ -12,6 +12,17 @@ Winget Intune app packager
 
 This tool auto create Intune app package from Winget app repository using https://github.com/Romanitho/Winget-Install
 
+## Prerequisites
+
+Before using the tool, you must create an app registion in Entra:
+
+1. Open the **Microsoft Entra admin center**
+1. In Microsoft Entra admin center, click **App registrations**.
+1. In App registations, click **New registration**.
+1. In Register an application, enter a **Name**, e.g., *WingetIntunepackager*. Leve **Supported account types** on **Single tenant only**. Under **Redirect URI (optional)**, select **Public client/native (mobile & desktop)** and enter **https://login.microsoftonline.com/common/oauth2/nativeclient**. Click **Register**
+
+On the **Overview** page, you will find the necessary information for the configuration file (see below).
+
 ## Configuration file
 You can place an configuration file with the name config.env in the same folder as the executable. The configuration file should be in the following format:
 ```
