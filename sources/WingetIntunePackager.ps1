@@ -613,9 +613,9 @@ function Invoke-IntunePackage () {
         $Win32AppArgs.Icon = $Icon
     }
 
-    Add-IntuneWin32App @Win32AppArgs -WarningVariable warning
-    $warning | foreach-object {
-        Write-Warning ($warning -join "`n")
+    Add-IntuneWin32App @Win32AppArgs -WarningAction SilentlyContinue -WarningVariable warning
+    if ($warning) {
+        $warning | ForEach-Object { Write-Warning $_ }
     }
 }
 
