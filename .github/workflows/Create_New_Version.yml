@@ -39,8 +39,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           
       - name: Update Powershell Version
-        #Replace line 12 with new version
-        run: sed -i '12s/.*/$Script:WingetIntunePackager = "${{ steps.versioning.outputs.version }}"/g' sources/WingetIntunePackager.ps1
+        run: sed -i 's/^\$Script:WingetIntunePackager = .*/$Script:WingetIntunePackager = "${{ steps.versioning.outputs.version }}"/' sources/WingetIntunePackager.ps1
 
       - name: Commit & Push
         uses: actions-js/push@v1.4
